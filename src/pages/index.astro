@@ -1,0 +1,90 @@
+---
+import Icon from '../components/Icon.astro';
+import PortfolioCard from '../components/PortfolioCard.astro';
+import { indexable, profile } from '../profile';
+import '../styles/site.css';
+
+const { portrait } = profile;
+const sharingOrigin = !indexable && process.env.VERCEL_URL
+  ? `https://${process.env.VERCEL_URL}`
+  : profile.canonical;
+---
+<!doctype html>
+<html lang="en" id="top">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{profile.title}</title>
+    <meta name="description" content={profile.description} />
+    <meta name="robots" content={indexable ? 'index, follow' : 'noindex, nofollow'} />
+    <link rel="canonical" href={profile.canonical} />
+    <meta name="theme-color" content="#101212" />
+    <link rel="icon" type="image/svg+xml" href="/mark.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={profile.title} />
+    <meta property="og:description" content={profile.description} />
+    <meta property="og:url" content={profile.canonical} />
+    <meta property="og:image" content={new URL('/images/share.jpg', sharingOrigin).href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Dilux Lane personal profile with portrait" />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="wordmark" href="#top" aria-label="Dilux Lane home"><img src="/mark.svg" width="34" height="34" alt="" /><span>DILUX LANE</span></a>
+        <nav aria-label="Primary"><a href="#work">Work</a><a href="#about">About</a><a href="#contact">Contact</a></nav>
+      </div>
+    </header>
+    <main id="main">
+      <section class="hero shell" aria-labelledby="name">
+        <div class="portrait" data-portrait>
+          {portrait && <img src={portrait.src} srcset={portrait.srcset} sizes="(min-width: 1200px) 610px, (min-width: 800px) 52vw, 100vw" alt={portrait.alt} width="1080" height="1080" fetchpriority="high" decoding="async" />}
+          <span class="portrait-note mono" aria-hidden="true">FIG. 01 / DILUX</span>
+        </div>
+        <div class="hero-copy">
+          <p class="eyebrow mono"><span></span> PERSONAL PROFILE</p>
+          <h1 id="name">Dilux Lane<span>.</span></h1>
+          <p class="role">{profile.role}</p>
+          <p class="intro">{profile.introduction}</p>
+          <div class="social-icons" aria-label="Social profiles" role="group">
+            {profile.socials.map((social) => <a href={social.url} aria-label={social.name}><Icon name={social.icon} size={18} /></a>)}
+          </div>
+          <a class="hero-action" href="#work">Explore my work <Icon name="down" size={17} /></a>
+        </div>
+      </section>
+      <section class="shell section work" id="work" aria-labelledby="work-title">
+        <div class="section-heading">
+          <div><p class="eyebrow mono"><span></span> 01 / PORTFOLIOS</p><h2 id="work-title">Explore my work</h2></div>
+          <p>Film, photography, and software.</p>
+        </div>
+        <div class="portfolio-grid">{profile.portfolios.map((item) => <PortfolioCard item={item} />)}</div>
+      </section>
+      <section class="shell section split" id="about" aria-labelledby="about-title">
+        <div><p class="eyebrow mono"><span></span> 02 / ABOUT</p><h2 id="about-title">A little about me</h2></div>
+        <div class="prose">{profile.about.map((line) => <p>{line}</p>)}</div>
+      </section>
+      <section class="shell section split" id="links" aria-labelledby="links-title">
+        <div><p class="eyebrow mono"><span></span> 03 / LINKS</p><h2 id="links-title">Find me online</h2></div>
+        <ul class="profile-links">
+          {profile.socials.map((social) => <li><a href={social.url}><Icon name={social.icon} size={19} /><span>{social.name}<small>{social.handle}</small></span><Icon name="arrow" size={17} /></a></li>)}
+        </ul>
+      </section>
+      <section class="shell section split" id="contact" aria-labelledby="contact-title">
+        <div><p class="eyebrow mono"><span></span> 04 / CONTACT</p><h2 id="contact-title">Say hello</h2></div>
+        <div class="prose"><p>Have a project in mind, or want to talk about film or code? Send me a message on Instagram.</p><a class="contact-action" href={profile.contact}>Message me on Instagram <Icon name="arrow" size={17} /></a></div>
+      </section>
+    </main>
+    <footer class="site-footer"><div class="shell footer-inner"><span>Dilux Lane <span class="footer-separator">/</span> Personal website</span><a href={profile.organization}>Zyberlane · my agency <Icon name="arrow" size={14} /></a></div></footer>
+    <script>
+      const portrait = document.querySelector<HTMLImageElement>('[data-portrait] img');
+      if (portrait) {
+        const hideUnavailableImage = () => { portrait.hidden = true; };
+        portrait.addEventListener('error', hideUnavailableImage, { once: true });
+        if (portrait.complete && !portrait.naturalWidth) hideUnavailableImage();
+      }
+    </script>
+  </body>
+</html>

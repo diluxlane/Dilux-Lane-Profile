@@ -1,0 +1,19 @@
+---
+import Icon from './Icon.astro';
+import type { profile } from '../profile';
+interface Props { item: (typeof profile.portfolios)[number] }
+const { item } = Astro.props;
+---
+<a class:list={['portfolio-card', item.id]} href={item.url}>
+  <div class="card-art" aria-hidden="true">
+    {item.id === 'creative' ?
+      <svg viewBox="0 0 400 180" fill="none"><circle cx="200" cy="90" r="61"/><circle cx="200" cy="90" r="48"/><circle cx="200" cy="90" r="21" opacity=".5"/><path d="M122 55V35h20m116 0h20v20m0 70v20h-20m-116 0h-20v-20m62-35h32m-16-16v32"/></svg> :
+      <svg viewBox="0 0 400 180" fill="none"><path d="m200 32 74 40-74 41-74-41 74-40Zm-74 58 74 41 74-41m-148 18 74 41 74-41m-74-76v81m-74-41 148 0m-111-20 74 41m0-41-74 41"/><circle cx="200" cy="72" r="4" fill="currentColor"/></svg>}
+  </div>
+  <span class="card-index mono">{item.number} / {item.type}</span>
+  <div class="card-body">
+    <h3>{item.title}</h3>
+    <p>{item.description}</p>
+    <span class="card-action">{item.action}<Icon name="arrow" size={16} /></span>
+  </div>
+</a>

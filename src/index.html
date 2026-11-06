@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Enter Dilux Lane’s personal world. Explore his creative and developer portfolios, socials, and more.">
+  <meta name="theme-color" content="#0b1420">
+  <link rel="icon" href="./assets/mark.svg" type="image/svg+xml">
+  <link rel="preload" href="./assets/world.webp" as="image">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+  <title>Dilux Lane | Enter My World</title>
+</head>
+<body>
+  <a class="skip" href="#destination">Skip to destination</a>
+  <div class="world" aria-hidden="true"></div>
+  <div class="frame" aria-hidden="true"></div>
+  <header class="topbar">
+    <a class="brand" href="#links" aria-label="Dilux Lane, My links">
+      <span class="mark" aria-hidden="true">d<span>.</span></span>
+      <span class="brand-detail">Dilux Lane<small>Personal universe</small></span>
+    </a>
+    <div class="tools">
+      <button id="motion" aria-label="Pause motion" aria-pressed="false"></button>
+      <button id="sound" aria-label="Sound unavailable" disabled></button>
+      <button id="share" aria-label="Share Dilux Lane’s page"></button>
+    </div>
+  </header>
+  <div class="layout">
+    <div class="stage">
+      <section class="identity" aria-labelledby="name">
+        <p class="eyebrow">A creative mind. A curious world.</p>
+        <h1 id="name">Dilux Lane<span>.</span></h1>
+        <p class="roles">Filmmaking <b>/</b> Web Development <b>/</b> AI</p>
+        <p class="welcome eyebrow">Welcome to my universe</p>
+      </section>
+      <nav aria-label="Primary navigation">
+        <div class="orbit" role="tablist" aria-label="Choose a destination">
+          <svg class="rails mobile-rails" viewBox="0 0 390 125" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M-24 0 Q195 193 414 0 M-24 12 Q195 205 414 12 M-24 24 Q195 217 414 24"/>
+            <path class="glint" d="M151 126 Q195 137 239 126"/>
+          </svg>
+          <svg class="rails desktop-rails" viewBox="0 0 600 880" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M0 14 C360 20 540 230 540 488 C540 670 445 801 294 880 M0 25 C350 26 531 236 531 488 C531 664 440 794 285 880 M0 36 C340 33 522 242 522 488 C522 658 435 787 276 880"/>
+            <path class="glint" d="M531 488 C531 548 518 610 493 665"/>
+          </svg>
+        </div>
+        <p class="hint eyebrow">⟳ &nbsp; Drag to rotate · Tap to select</p>
+      </nav>
+    </div>
+    <main id="destination" tabindex="-1">
+      <div id="panel" role="tabpanel" tabindex="0">
+        <div class="panel-meta eyebrow"><span>Select your destination</span><span><strong id="number">01</strong> / 05</span></div>
+        <div id="content"></div>
+      </div>
+      <div class="pager">
+        <button id="previous" aria-label="Previous section"></button>
+        <span class="eyebrow"><span class="mobile-hint">Swipe to change worlds</span><span class="desktop-hint">Use arrow keys to navigate</span></span>
+        <button id="next" aria-label="Next section"></button>
+      </div>
+      <noscript><p>Enable JavaScript to rotate the destinations.</p><p><a href="https://dilux-lane-portfolio.vercel.app">Creative Portfolio</a> · <a href="https://dilux-lane-dev-portfolio.vercel.app">Developer Portfolio</a> · <a href="https://github.com/diluxlane">GitHub</a> · <a href="https://zyberlane.com">Zyberlane</a></p></noscript>
+    </main>
+  </div>
+  <footer class="eyebrow"><span>© 2026 Dilux Lane</span><span>Made with <b>intent</b></span></footer>
+  <p id="status" class="toast" role="status"></p>
+  <dialog id="share-dialog">
+    <form method="dialog">
+      <h2>Share this world<span>.</span></h2>
+      <label for="share-url">Page link</label>
+      <input id="share-url" readonly>
+      <button class="gold-button">Close</button>
+    </form>
+  </dialog>
+</body>
+</html>

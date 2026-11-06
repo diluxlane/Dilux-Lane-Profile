@@ -1,0 +1,25 @@
+export const wrap = (index, count) => ((index % count) + count) % count;
+
+export function offset(index, position, count) {
+  return wrap(index - position + count / 2, count) - count / 2;
+}
+
+export function orbitPoint(slot, width, height, desktop) {
+  const distance = Math.abs(slot);
+  if (desktop) {
+    return {
+      x: width * (.622 - .041 * distance ** 2),
+      y: height * (.652 + .151 * slot),
+    };
+  }
+  return {
+    x: width * (.5 + .226 * slot - .0086 * slot ** 3),
+    y: height * (.55 - .072 * distance ** 2),
+  };
+}
+
+export function swipeStep(dx, dy, distance = 34) {
+  return Math.abs(dx) >= distance && Math.abs(dx) > Math.abs(dy) * 1.25
+    ? -Math.sign(dx)
+    : 0;
+}

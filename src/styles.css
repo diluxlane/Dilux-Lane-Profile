@@ -38,29 +38,27 @@ body{isolation:isolate}
 .mobile-rails{transform:translateY(-33%) scaleY(1.14)}
 .glint{stroke-width:2.2;stroke-opacity:.77;stroke-dasharray:25 95;animation:glimmer 5s linear infinite}
 @keyframes glimmer{from{stroke-dashoffset:0}to{stroke-dashoffset:-120}}
-.orbit-button{position:absolute;left:0;top:0;display:flex;align-items:center;flex-direction:column;gap:8px;width:0;height:0;overflow:visible;color:var(--gold);white-space:nowrap;font-size:clamp(9px,2.55vw,14px);touch-action:pan-y pinch-zoom}
-.orbit-button:focus-visible{outline:none}
-.orbit-button:focus-visible .circle{outline:2px solid var(--ivory);outline-offset:5px}
+.orbit-button{--size:clamp(43px,12vw,66px);position:absolute;left:0;top:0;translate:-50% -50%;width:var(--size);height:var(--size);border-radius:50%;color:var(--gold);white-space:nowrap;font-size:clamp(9px,2.55vw,14px);touch-action:pan-y pinch-zoom}
 .orbit-button[aria-selected=true]{color:var(--ivory)}
-.circle{width:clamp(43px,12vw,66px);height:clamp(43px,12vw,66px);display:grid;place-items:center;flex:none;transform:translateY(-50%);margin-bottom:calc(-1 * clamp(22px,6vw,33px));border:1px solid #c9b477;background:#10171f;border-radius:50%;color:var(--gold);transition:background .23s,color .23s;position:relative}
+.circle{width:100%;height:100%;display:grid;place-items:center;border:1px solid #c9b477;background:#10171f;border-radius:50%;color:var(--gold);transition:background .23s,color .23s;position:relative}
 .circle svg{width:44%;height:44%}
 .orbit-button:hover .circle{background:#27303a}
 .orbit-button[aria-selected=true] .circle{background:#e0c680;color:#171911}
 .orbit-button[aria-selected=true] .circle::after{content:"";position:absolute;inset:-5px;border:1px solid #e0c680aa;border-radius:inherit}
-.orbit-button .label{pointer-events:none}
+.orbit-button .label{position:absolute;top:calc(100% + 8px);left:50%;translate:-50% 0;pointer-events:none}
 .hint{text-align:center;color:var(--muted);font-size:8px;margin:4px 0 15px}
 main{width:min(100% - var(--gutter)*2,610px);margin:auto;touch-action:pan-y pinch-zoom}
 .panel-meta{display:flex;align-items:center;justify-content:space-between;color:var(--muted)}
 .panel-meta strong{color:var(--gold);font-size:13px;font-weight:550}
-#content{animation:arrive .33s ease-out both}
+#content.arriving{animation:arrive .33s ease-out both}
 @keyframes arrive{from{opacity:.18;transform:translateY(7px)}to{opacity:1;transform:none}}
-h2{font-size:clamp(26px,7vw,41px);line-height:1.2;letter-spacing:.032em;margin:16px 0 10px}
+h2{font-size:clamp(26px,7vw,41px);line-height:1.2;letter-spacing:.032em;margin:11px 0 10px}
 .lede{color:var(--muted);font-size:clamp(13px,3.35vw,17px)}
-.panel-body{margin-top:25px}
+.panel-body{margin-top:21px}
 h3{font-size:clamp(16px,4.2vw,22px);letter-spacing:.06em;margin:0 0 7px}
 .feature{display:grid;border:1px solid #bba56e;background:#101a26;margin-bottom:24px;transition:border-color .2s}
 .feature:hover{border-color:var(--ivory)}
-.feature-art{display:grid;min-height:125px;aspect-ratio:16/7;place-items:center;background:linear-gradient(105deg,#080f1c36,#101a26aa),url('./assets/world.webp') 16% 45%/cover;color:var(--gold);border-bottom:1px solid var(--line)}
+.feature-art{display:grid;min-height:125px;aspect-ratio:16/9;place-items:center;background:linear-gradient(105deg,#080f1c36,#101a26aa),url('./assets/world.webp') 16% 45%/cover;color:var(--gold);border-bottom:1px solid var(--line)}
 .feature-art svg{width:37px;height:37px}
 .feature-copy{padding:15px 16px;color:var(--muted)}
 .feature-copy h3{color:var(--gold);margin:4px 0}
@@ -119,7 +117,7 @@ dialog input{display:block;width:100%;padding:8px;background:#131f2c;color:var(-
   .frame{display:block;position:fixed;pointer-events:none;z-index:5;inset:17px;background:linear-gradient(var(--line),var(--line)) top left/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) top left/1px 14px no-repeat,linear-gradient(var(--line),var(--line)) top right/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) top right/1px 14px no-repeat,linear-gradient(var(--line),var(--line)) bottom left/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) bottom left/1px 14px no-repeat,linear-gradient(var(--line),var(--line)) bottom right/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) bottom right/1px 14px no-repeat}
   .topbar{padding:24px var(--gutter);position:relative;z-index:3}
   .brand-detail{display:block;font-size:11px;letter-spacing:.19em;text-transform:uppercase;line-height:1.55;margin-left:8px}
-  .brand-detail small{display:block;color:var(--muted);font-size:8px}
+  .brand{text-shadow:0 1px 8px #091321,0 0 16px #091321}.brand-detail small{display:block;color:var(--muted);font-size:8px}
   .mark{font-size:29px}
   .layout{display:grid;grid-template-columns:52% 48%;align-items:start;min-height:calc(100vh - 160px)}
   .stage{position:sticky;top:0;height:calc(100svh - 78px);min-height:555px;isolation:isolate}
@@ -133,14 +131,13 @@ dialog input{display:block;width:100%;padding:8px;background:#131f2c;color:var(-
   .desktop-rails,.desktop-hint{display:block}
   .mobile-rails,.mobile-hint,.hint{display:none}
   .desktop-rails{width:70%;height:102%;top:13%}
-  .orbit-button{flex-direction:row;gap:11px;font-size:12px;letter-spacing:.1em}
-  .circle{width:clamp(47px,4.45vw,68px);height:clamp(47px,4.45vw,68px);margin:0;transform:translate(-50%,-50%)}
-  .orbit-button .label{position:absolute;left:clamp(34px,3.35vw,54px);top:0;transform:translateY(-50%)}
+  .orbit-button{--size:clamp(47px,4.45vw,68px);font-size:12px;letter-spacing:.1em}
+  .orbit-button .label{top:50%;left:calc(100% + 11px);translate:0 -50%}
   main{width:min(83%,660px);margin:42px 0 0 1.7%}
   h2{margin:18px 0 10px}
   .panel-body{margin-top:30px}
   .feature{grid-template-columns:42% 1fr}
-  .feature-art{height:100%;aspect-ratio:auto;border:0;border-right:1px solid var(--line)}
+  .feature-art{height:100%;min-height:180px;aspect-ratio:auto;border:0;border-right:1px solid var(--line)}
   .feature-copy{padding:16px}
   .row-list{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
   .pager{margin-top:30px}

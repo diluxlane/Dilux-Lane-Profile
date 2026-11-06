@@ -113,6 +113,7 @@ function select(next, { focus = false, updateHash = true, immediate = false } = 
     $('#number').textContent = String(active + 1).padStart(2, '0');
     const replacement = document.createElement('div');
     replacement.id = 'content';
+    if (!immediate) replacement.className = 'arriving';
     replacement.innerHTML = `<h2>${current.title}<span>.</span></h2><p class="lede">${current.description}</p><div class="panel-body">${renderBody[current.id]()}</div>`;
     if (content.contains(document.activeElement)) panel.focus({ preventScroll: true });
     content.replaceWith(replacement);

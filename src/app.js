@@ -2,6 +2,7 @@ import { destinations, profile } from './profile.js';
 import { icon } from './icons.js';
 import { offset, orbitPoint, swipeStep, wrap } from './orbit.js';
 import { setupSiteSound } from './sound.js';
+import { spotifyFrameGeometry } from './spotify-layout.js';
 
 const $ = (selector) => document.querySelector(selector);
 const desktop = matchMedia('(min-width: 900px)');
@@ -19,6 +20,7 @@ let paused = false;
 let toastTimer;
 let suppressClickUntil = 0;
 let playNavigationSound = () => {};
+let spotifyResizeObserver = null;
 
 function row(entry) {
   return `<a class="row" href="${entry.url}">${icon(entry.icon)}
@@ -119,6 +121,8 @@ function select(next, { focus = false, updateHash = true, immediate = false } = 
     if (!immediate) replacement.className = 'arriving';
     replacement.innerHTML = `<h2>${current.title}<span>.</span></h2><p class="lede">${current.description}</p><div class="panel-body">${renderBody[current.id]()}</div>`;
     if (content.contains(document.activeElement)) panel.focus({ preventScroll: true });
+    spotifyResizeObserver?.disconnect();
+    spotifyResizeObserver = null;
     content.replaceWith(replacement);
     content = replacement;
     if (updateHash) history.replaceState(null, '', `#${current.id}`);
@@ -243,7 +247,23 @@ panel.addEventListener('click', (event) => {
   embed.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
   embed.setAttribute('allowfullscreen', '');
   embed.referrerPolicy = 'strict-origin-when-cross-origin';
+  embed.loading = 'lazy';
   player.append(embed);
+
+  // Spotify controls its iframe content. Give its full playlist UI a wide,
+  // stable internal viewport, then fit the complete player inside this card.
+  // This avoids cropped controls on narrow Android/iOS screens.
+  const sizeSpotify = () => {
+    const layout = spotifyFrameGeometry(player.clientWidth);
+    if (!layout) return;
+    player.style.height = `${layout.displayHeight}px`;
+    embed.style.width = `${layout.embedWidth}px`;
+    embed.style.height = `${layout.embedHeight}px`;
+    embed.style.transform = `scale(${layout.scale})`;
+  };
+  sizeSpotify();
+  spotifyResizeObserver = new ResizeObserver(sizeSpotify);
+  spotifyResizeObserver.observe(player);
   announce('Playlist player opened. Use the direct playlist link if it does not load.');
 });
 

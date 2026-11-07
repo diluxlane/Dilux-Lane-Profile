@@ -1,6 +1,7 @@
 import { destinations, profile } from './profile.js';
 import { icon } from './icons.js';
 import { offset, orbitPoint, swipeStep, wrap } from './orbit.js';
+import { setupSiteSound } from './sound.js';
 
 const $ = (selector) => document.querySelector(selector);
 const desktop = matchMedia('(min-width: 900px)');
@@ -17,6 +18,7 @@ let drag = null;
 let paused = false;
 let toastTimer;
 let suppressClickUntil = 0;
+let playNavigationSound = () => {};
 
 function row(entry) {
   return `<a class="row" href="${entry.url}">${icon(entry.icon)}
@@ -105,6 +107,7 @@ function select(next, { focus = false, updateHash = true, immediate = false } = 
   const active = wrap(next, count);
   const current = destinations[active];
   if (panel.getAttribute('aria-labelledby') !== buttons[active].id) {
+    if (!immediate && panel.hasAttribute('aria-labelledby')) playNavigationSound();
     buttons.forEach((button, index) => {
       button.setAttribute('aria-selected', String(index === active));
       button.tabIndex = index === active ? 0 : -1;
@@ -216,37 +219,18 @@ function announce(message) {
   toastTimer = setTimeout(() => { $('#status').textContent = ''; }, 3400);
 }
 
-const sound = $('#sound');
-function showSound(playing) {
-  const label = profile.audioUrl ? (playing ? 'Sound on' : 'Sound off') : 'Sound unavailable';
-  sound.innerHTML = `${icon(playing ? 'volume' : 'mute')}<span class="eyebrow">${label}</span>`;
-  sound.setAttribute('aria-label', label);
-  sound.setAttribute('aria-pressed', String(playing));
-}
-showSound(false);
-if (profile.audioUrl) {
-  sound.disabled = false;
-  const audio = new Audio();
-  audio.preload = 'none';
-  audio.src = profile.audioUrl;
-  audio.loop = true;
-  const audioError = () => { showSound(false); announce('Audio could not load. Try again later.'); };
-  audio.addEventListener('error', audioError);
-  sound.addEventListener('click', async () => {
-    if (!audio.paused) {
-      audio.pause();
-      showSound(false);
-      return;
-    }
-    try {
-      await audio.play();
-      showSound(true);
-    } catch { audioError(); }
-  });
-}
+const soundSystem = setupSiteSound({
+  button: $('#sound'),
+  oggUrl: profile.audioUrl,
+  mp3Url: profile.audioMp3Url,
+  icon,
+  announce,
+});
+playNavigationSound = soundSystem.tick;
 
 panel.addEventListener('click', (event) => {
   if (!event.target.closest('#load-playlist') || !profile.playlist.url) return;
+  soundSystem.stop(); // Prevent overlap with the Spotify player.
   if (!profile.playlist.embedUrl) {
     location.assign(profile.playlist.url);
     return;

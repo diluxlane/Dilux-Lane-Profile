@@ -1,0 +1,22 @@
+name: Validate site
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test and build
+        run: |
+          node --check src/app.js
+          node --check src/sound.js
+          node --check src/profile.js
+          npm test
+          npm run build

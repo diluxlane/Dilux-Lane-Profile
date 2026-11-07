@@ -41,5 +41,6 @@ test('published links and approved personal media match site configuration', () 
   assert.equal(profile.portrait, '/assets/portrait.webp');
   assert.equal(profile.playlist.url, 'https://open.spotify.com/playlist/3BLoPATQ9Bk8ZSblfBD8RS');
   assert.equal(profile.playlist.embedUrl, 'https://open.spotify.com/embed/playlist/3BLoPATQ9Bk8ZSblfBD8RS');
-  assert.equal(profile.audioUrl, null);
+  assert.equal(profile.audioUrl, '/assets/cathedral-in-the-forest.ogg');
+  assert.equal(profile.audioMp3Url, '/assets/cathedral-in-the-forest.mp3');
 });

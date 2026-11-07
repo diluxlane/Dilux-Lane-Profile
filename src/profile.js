@@ -28,7 +28,8 @@ export const profile = {
     url: 'https://open.spotify.com/playlist/3BLoPATQ9Bk8ZSblfBD8RS',
     embedUrl: 'https://open.spotify.com/embed/playlist/3BLoPATQ9Bk8ZSblfBD8RS',
   },
-  audioUrl: null,
+  audioUrl: '/assets/cathedral-in-the-forest.ogg',
+  audioMp3Url: '/assets/cathedral-in-the-forest.mp3',
 };
 
 export const destinations = [

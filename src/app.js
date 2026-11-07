@@ -240,6 +240,8 @@ panel.addEventListener('click', (event) => {
   const embed = document.createElement('iframe');
   embed.title = 'Dilux Lane’s playlist player';
   embed.src = profile.playlist.embedUrl;
+  embed.allow = 'autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture';
+  embed.setAttribute('allowfullscreen', '');
   embed.referrerPolicy = 'strict-origin-when-cross-origin';
   player.append(embed);
   announce('Playlist player opened. Use the direct playlist link if it does not load.');

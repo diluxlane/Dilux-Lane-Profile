@@ -36,7 +36,7 @@ Additional social accounts and contact methods are intentionally not listed unti
 - Five synchronized navigation destinations with drag/swipe interaction, keyboard support, arrow controls, and wraparound selection.
 - A motion pause/resume control and support for the operating system's reduced-motion preference.
 - Responsive portrait and portfolio links, with no fabricated social or contact information.
-- Spotify playlist integration that loads on demand; compact embedded-player styling and a direct link are provided.
+- Spotify playlist integration that loads on demand; full-height Spotify playlist-player styling and a direct link are provided.
 - **Optional sound:** an opt-in CC0 ambient soundtrack plus a short original electronic-kick effect when destinations change.
 - Share using the browser's native share API when available, with clipboard/manual fallback behavior.
 - Static deployment, no client-side API keys, and no autoplay audio.
@@ -159,7 +159,7 @@ Public URLs and approved personal media are managed in [`src/profile.js`](src/pr
 - GitHub Actions validates JavaScript syntax, Node tests (including the navigation sample), and the static production build.
 - The original reconstruction was compared in Chromium at **320, 390, 768, 1280, and 1440 px**, across all five destinations, and checked for horizontal overflow. See [`REVIEW.md`](REVIEW.md) for the historical screenshot-by-screenshot notes.
 - Subsequent content, media, audio, and styling updates were made after the initial visual comparison; the original browser results must not be treated as fresh verification of every later change.
-- Remaining device-level checks include actual touch dragging, native sharing, Spotify's browser-dependent embedding/playback behavior, sound level and compatibility, reduced-motion interaction, and a formal screen-reader/Lighthouse audit.
+- Remaining device-level checks include actual touch dragging, native sharing, Spotify's 352 px full-player track-list layout and browser-dependent playback behavior, sound level and compatibility, reduced-motion interaction, and a formal screen-reader/Lighthouse audit.
 
 ## Copyright and license
 

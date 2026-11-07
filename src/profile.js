@@ -23,8 +23,11 @@ export const profile = {
   ],
   socials: [instagram, github],
   contact: [{ ...instagram, title: 'Say hello on Instagram', detail: 'Send a message to @dilux.ln' }],
-  portrait: null,
-  playlist: { url: null, embedUrl: null },
+  portrait: '/assets/portrait.webp',
+  playlist: {
+    url: 'https://open.spotify.com/playlist/3BLoPATQ9Bk8ZSblfBD8RS',
+    embedUrl: 'https://open.spotify.com/embed/playlist/3BLoPATQ9Bk8ZSblfBD8RS',
+  },
   audioUrl: null,
 };
 

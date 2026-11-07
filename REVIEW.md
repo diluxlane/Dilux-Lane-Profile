@@ -1,12 +1,19 @@
 # Reference comparison and verification
 
+## Sound update — November 7, 2026
+
+- Added CC0 ambient track **Cathedral in the forest (ambient loop)** by congusbongus, bundled as OGG and 80 kbps MP3 with source and license information in `README.md`.
+- The sound toggle now starts music only after an intentional visitor action; music loops at gentle volume, fades in and out, and pauses when the Spotify player is opened.
+- Orbit destination changes produce a quiet, original Web Audio synthesized selection tick while sound is enabled. The exact original Renando sound effect could not be verified, so this is not a copy.
+- Repository JavaScript checks, four tests, and static build passed in GitHub Actions. Physical-device audio playback, sound quality, native sharing, and Spotify-player interaction still need manual verification.
+
 ## Post-review updates — November 7, 2026
 
 The original screenshot comparisons and earlier browser-test results below document the initial rebuild; they predate the latest personal-media update.
 
 - The approved personal portrait now replaces the About me monogram, using `public/assets/portrait.webp`.
 - The supplied public Spotify playlist and embed URL are configured; the original playlist-disabled state no longer describes the current source.
-- Background sound remains disabled until an approved, distributable audio source is supplied.
+- Background sound was disabled at that time; see the later Sound update section above.
 - Additional social/contact URLs and real-device/a11y verification remain optional or outstanding as described in `README.md`.
 - The automated configuration test has been updated to expect the approved portrait and Spotify URLs instead of `null` values. This documentation edit alone does not claim a new browser or deployment test pass.
 

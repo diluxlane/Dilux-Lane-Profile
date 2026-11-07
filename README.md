@@ -6,7 +6,7 @@ A static personal link hub with five destinations. The mobile interface uses a h
 
 Use a current Node.js LTS. Run `npm test`, then `npm run build`. Serve `dist/` through a static HTTP server. No package install, backend, or environment variables are required. The repository’s Vercel configuration builds into `dist/`.
 
-Edit public links and media in `src/profile.js`. Add a social entry with a title, detail, approved public URL, and icon key. Set `portrait` to an approved image, `playlist.url` to the public playlist, and optionally `playlist.embedUrl` to its provider’s embed endpoint. Set `audioUrl` only when the audio is approved for distribution. Sound starts only after the visitor presses the control.
+Edit public links and media in `src/profile.js`. Add a social entry with a title, detail, approved public URL, and icon key. Set `portrait` to an approved image, `playlist.url` to the public playlist, and optionally `playlist.embedUrl` to its provider’s embed endpoint. Use `audioUrl` and `audioMp3Url` for appropriately licensed audio. Sound starts only after the visitor presses the control.
 
 ## Sources and assets
 
@@ -20,13 +20,19 @@ Edit public links and media in `src/profile.js`. Add a social entry with a title
 
 - **Portrait:** The user-provided portrait is stored at `public/assets/portrait.webp` and shown in About me.
 - **Playlist:** The user-supplied [Spotify playlist](https://open.spotify.com/playlist/3BLoPATQ9Bk8ZSblfBD8RS) is linked and configured to load an embedded Spotify player when the visitor selects **Load playlist**. A direct Spotify link is also available. Actual playback and failure handling on supported browsers/devices still need verification.
-- **Background sound:** Deliberately disabled (`audioUrl: null`). This is independent of the Spotify playlist; enabling it would require an authorized audio file or URL and a user-triggered playback test.
+- **Background sound:** **Cathedral in the forest (ambient loop)** by congusbongus (CC0) is hosted locally as OGG and MP3. It starts only after the visitor presses the sound control, loops at low volume, fades in/out, and stops before the Spotify embed opens. A quiet, originally synthesized navigation tick accompanies destination changes only while sound is on.
 - **Social/contact links:** The confirmed public Instagram and GitHub links are included; Contact currently points to Instagram. YouTube, TikTok, email, and other links are optional and must be verified before publishing.
 
 ## Remaining verification
 
-- Test the Spotify embed (including denied third-party cookies, failed loading, and playback restrictions), the portrait crop, and the latest deployment in a real browser.
+- Test the Spotify embed (including denied third-party cookies, failed loading, and playback restrictions), the portrait crop, the user-controlled ambient music and navigation tick, and the latest deployment in a real browser.
 - Test physical touchscreen dragging, native device sharing, and OS reduced-motion behavior; these were not covered by the earlier Chromium comparison.
 - Complete a formal Lighthouse and screen-reader audit when practical.
+
+## Sound sources and licensing
+
+- **Music:** [Cathedral in the forest (ambient loop)](https://opengameart.org/content/cathedral-in-the-forest-ambient-loop) by **congusbongus**, published under [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). Original OGG source: `forest_2_0.ogg`; `cathedral-in-the-forest.mp3` is an 80 kbps compatibility conversion. Both files are bundled in `public/assets/`; credit is retained for provenance even though CC0 does not require it.
+- **Interaction sound:** An original short synthesized sine-wave tick using the Web Audio API. It is not extracted from, or claimed to be the exact sound used by, the Renando reference. No third-party sound sample is bundled.
+- **Behavior:** Both sounds are disabled until the visitor explicitly enables sound; audio is not preloaded. On supported browsers the OGG source is used; MP3 is supplied as a format fallback. The Spotify playlist is independent.
 
 `REVIEW.md` retains the original screenshot comparison as a historical record. Its current-status note tracks changes made after that review.

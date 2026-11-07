@@ -1,5 +1,15 @@
 # Reference comparison and verification
 
+## Post-review updates — November 7, 2026
+
+The original screenshot comparisons and earlier browser-test results below document the initial rebuild; they predate the latest personal-media update.
+
+- The approved personal portrait now replaces the About me monogram, using `public/assets/portrait.webp`.
+- The supplied public Spotify playlist and embed URL are configured; the original playlist-disabled state no longer describes the current source.
+- Background sound remains disabled until an approved, distributable audio source is supplied.
+- Additional social/contact URLs and real-device/a11y verification remain optional or outstanding as described in `README.md`.
+- The automated configuration test has been updated to expect the approved portrait and Spotify URLs instead of `null` values. This documentation edit alone does not claim a new browser or deployment test pass.
+
 The reference is the fantasy link hub at `duingzcreative.site/renando`. Its live desktop view places the identity and vertical orbit on the left and the destination panel on the right. The attached phone captures show the orbit as a shallow horizontal arc above the panel. The live page declares Jost with a Trebuchet fallback, an ivory heading of RGB 244, 240, 230, a Latin variable WOFF2, a WebP scene, a stylesheet, and a JavaScript bundle. Direct browser opening of the stylesheet was blocked. The stylesheet and script internals and the reference’s exact motion timing are unverified.
 
 ## Comparison of the five attachments

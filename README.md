@@ -16,6 +16,17 @@ Edit public links and media in `src/profile.js`. Add a social entry with a title
 - Icons and monogram: line drawings authored for this project. No third-party icon package.
 - About copy draws on the public [GitHub profile](https://github.com/diluxlane), [creative portfolio repository](https://github.com/diluxlane/Dilux-Lane-Portfolio), and [developer portfolio repository](https://github.com/diluxlane/Dilux-Lane-Dev-Portfolio).
 
-## Missing personal assets
+## Current personal media (updated November 7, 2026)
 
-Approved portrait, public playlist URL, licensed sound file, and any additional public contact or social URLs. The site uses a monogram and lists the confirmed Instagram and GitHub accounts. Contact uses the confirmed public Instagram profile. Playlist and sound disclose their unavailable state.
+- **Portrait:** The user-provided portrait is stored at `public/assets/portrait.webp` and shown in About me.
+- **Playlist:** The user-supplied [Spotify playlist](https://open.spotify.com/playlist/3BLoPATQ9Bk8ZSblfBD8RS) is linked and configured to load an embedded Spotify player when the visitor selects **Load playlist**. A direct Spotify link is also available. Actual playback and failure handling on supported browsers/devices still need verification.
+- **Background sound:** Deliberately disabled (`audioUrl: null`). This is independent of the Spotify playlist; enabling it would require an authorized audio file or URL and a user-triggered playback test.
+- **Social/contact links:** The confirmed public Instagram and GitHub links are included; Contact currently points to Instagram. YouTube, TikTok, email, and other links are optional and must be verified before publishing.
+
+## Remaining verification
+
+- Test the Spotify embed (including denied third-party cookies, failed loading, and playback restrictions), the portrait crop, and the latest deployment in a real browser.
+- Test physical touchscreen dragging, native device sharing, and OS reduced-motion behavior; these were not covered by the earlier Chromium comparison.
+- Complete a formal Lighthouse and screen-reader audit when practical.
+
+`REVIEW.md` retains the original screenshot comparison as a historical record. Its current-status note tracks changes made after that review.

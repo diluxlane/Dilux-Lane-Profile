@@ -32,12 +32,14 @@ test('swipe requires horizontal intent and a minimum distance', () => {
   assert.equal(swipeStep(15, 0), 0);
 });
 
-test('published links and empty media state reflect approved configuration', () => {
+test('published links and approved personal media match site configuration', () => {
   assert.deepEqual(profile.portfolios.map(({ url }) => url), [
     'https://dilux-lane-portfolio.vercel.app',
     'https://dilux-lane-dev-portfolio.vercel.app',
   ]);
   assert.deepEqual(profile.socials.map(({ title }) => title), ['Instagram', 'GitHub']);
-  assert.equal(profile.playlist.url, null);
+  assert.equal(profile.portrait, '/assets/portrait.webp');
+  assert.equal(profile.playlist.url, 'https://open.spotify.com/playlist/3BLoPATQ9Bk8ZSblfBD8RS');
+  assert.equal(profile.playlist.embedUrl, 'https://open.spotify.com/embed/playlist/3BLoPATQ9Bk8ZSblfBD8RS');
   assert.equal(profile.audioUrl, null);
 });

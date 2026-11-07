@@ -91,7 +91,7 @@ img.portrait{object-fit:cover}
 iframe{display:block;border:1px solid var(--line);width:100%;min-height:270px;border-radius:var(--radius-card)}
 /* Keep Spotify's entire cross-origin UI visible at mobile sizes.
    JavaScript sizes the inner iframe, without changing other page elements. */
-#player{position:relative;width:100%;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-card)}
+#player{position:relative;box-sizing:content-box;overflow:hidden;border:1px solid var(--line);border-radius:var(--radius-card)}
 #player iframe{position:absolute;top:0;left:0;display:block;width:100%;height:352px;min-height:0;max-width:none;border:0;border-radius:0;transform-origin:top left}
 .contact-note{margin-top:24px}
 .pager{display:flex;justify-content:center;align-items:center;gap:clamp(8px,3vw,18px);margin:24px 0 0;color:var(--muted);text-align:center}

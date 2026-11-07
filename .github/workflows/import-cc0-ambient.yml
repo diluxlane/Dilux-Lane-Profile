@@ -27,6 +27,8 @@ jobs:
             'https://raw.githubusercontent.com/euuuuuuan/moonshard-warden-public/main/src/assets/ambient/oga-cathedral-forest.ogg' \
             -o /tmp/cathedral-source.ogg
           test "$(head -c 4 /tmp/cathedral-source.ogg)" = "OggS"
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends ffmpeg
           ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 /tmp/cathedral-source.ogg
           cp /tmp/cathedral-source.ogg public/assets/cathedral-in-the-forest.ogg
           ffmpeg -nostdin -hide_banner -loglevel error -i /tmp/cathedral-source.ogg -vn -ac 2 -ar 44100 -b:a 80k -y public/assets/cathedral-in-the-forest.mp3

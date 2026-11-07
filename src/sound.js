@@ -1,4 +1,4 @@
-// Opt-in CC0 ambient soundtrack with original synthesized orbit-selection tick.
+// Opt-in CC0 ambient soundtrack with an original locally hosted electro-kick navigation effect.
 export function setupSiteSound({ button, oggUrl, mp3Url, icon, announce }) {
   const music = new Audio();
   music.preload = 'none';
@@ -43,24 +43,47 @@ export function setupSiteSound({ button, oggUrl, mp3Url, icon, announce }) {
     } else fadeTo(0, 220, () => music.pause());
   }
 
-  // Original sound design; no recording from the Renando reference is used.
+  // This short electro-kick is an original 180 ms audio sample kept in our assets.
+  // Decode it only after the visitor enables sound; no effect plays automatically.
+  let kickBuffer = null;
+  let kickRequest = null;
+  let lastKickAt = -1;
+
+  function loadKick() {
+    if (!context || kickBuffer || kickRequest) return;
+    kickRequest = fetch('/assets/orbit-kick.wav', { cache: 'force-cache' })
+      .then(response => {
+        if (!response.ok) throw new Error('Navigation sound unavailable');
+        return response.arrayBuffer();
+      })
+      .then(bytes => context.decodeAudioData(bytes))
+      .then(decoded => { kickBuffer = decoded; })
+      .catch(() => { kickRequest = null; }); // Audio is optional; navigation always works.
+  }
+
   function tick() {
     if (!enabled || !context || context.state !== 'running') return;
+    if (!kickBuffer) {
+      loadKick();
+      return;
+    }
+    const now = context.currentTime;
+    if (now - lastKickAt < 0.055) return;
+    lastKickAt = now;
+
     try {
-      const now = context.currentTime;
-      const oscillator = context.createOscillator();
-      const envelope = context.createGain();
-      oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(620, now);
-      oscillator.frequency.exponentialRampToValueAtTime(420, now + 0.14);
-      envelope.gain.setValueAtTime(0.0001, now);
-      envelope.gain.exponentialRampToValueAtTime(0.021, now + 0.012);
-      envelope.gain.exponentialRampToValueAtTime(0.0001, now + 0.16);
-      oscillator.connect(envelope);
-      envelope.connect(context.destination);
-      oscillator.start(now);
-      oscillator.stop(now + 0.17);
-    } catch { /* Sound effects must never block navigation. */ }
+      const source = context.createBufferSource();
+      const level = context.createGain();
+      source.buffer = kickBuffer;
+      level.gain.setValueAtTime(0.55, now);
+      source.connect(level);
+      level.connect(context.destination);
+      source.onended = () => {
+        source.disconnect();
+        level.disconnect();
+      };
+      source.start(now);
+    } catch { /* A blocked sound must never interrupt a destination change. */ }
   }
 
   music.addEventListener('error', () => {
@@ -78,6 +101,7 @@ export function setupSiteSound({ button, oggUrl, mp3Url, icon, announce }) {
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
       if (AudioContextClass && !context) context = new AudioContextClass();
       if (context?.state === 'suspended') void context.resume().catch(() => {});
+      loadKick();
       cancelAnimationFrame(fadeFrame);
       music.volume = 0;
       await music.play();

@@ -20,7 +20,7 @@ Edit public links and media in `src/profile.js`. Add a social entry with a title
 
 - **Portrait:** The user-provided portrait is stored at `public/assets/portrait.webp` and shown in About me.
 - **Playlist:** The user-supplied [Spotify playlist](https://open.spotify.com/playlist/3BLoPATQ9Bk8ZSblfBD8RS) is linked and configured to load an embedded Spotify player when the visitor selects **Load playlist**. A direct Spotify link is also available. Actual playback and failure handling on supported browsers/devices still need verification.
-- **Background sound:** **Cathedral in the forest (ambient loop)** by congusbongus (CC0) is hosted locally as OGG and MP3. It starts only after the visitor presses the sound control, loops at low volume, fades in/out, and stops before the Spotify embed opens. A quiet, originally synthesized navigation tick accompanies destination changes only while sound is on.
+- **Background sound:** **Cathedral in the forest (ambient loop)** by congusbongus (CC0) is hosted locally as OGG and MP3. It starts only after the visitor presses the sound control, loops at low volume, fades in/out, and stops before the Spotify embed opens. A short, punchy electronic kick accompanies destination changes only while sound is on.
 - **Social/contact links:** The confirmed public Instagram and GitHub links are included; Contact currently points to Instagram. YouTube, TikTok, email, and other links are optional and must be verified before publishing.
 
 ## Remaining verification
@@ -32,7 +32,7 @@ Edit public links and media in `src/profile.js`. Add a social entry with a title
 ## Sound sources and licensing
 
 - **Music:** [Cathedral in the forest (ambient loop)](https://opengameart.org/content/cathedral-in-the-forest-ambient-loop) by **congusbongus**, published under [CC0 1.0 Universal](https://creativecommons.org/publicdomain/zero/1.0/). Original OGG source: `forest_2_0.ogg`; `cathedral-in-the-forest.mp3` is an 80 kbps compatibility conversion. Both files are bundled in `public/assets/`; credit is retained for provenance even though CC0 does not require it.
-- **Interaction sound:** An original short synthesized sine-wave tick using the Web Audio API. It is not extracted from, or claimed to be the exact sound used by, the Renando reference. No third-party sound sample is bundled.
+- **Interaction sound:** `public/assets/orbit-kick.wav` is an original 180 ms mono PCM WAV (32 kHz) electronic-kick sample created programmatically for this site. It has a short percussive attack and a descending tonal body. The site loads the asset only after sound is enabled and uses Web Audio to play it on destination changes. No third-party sample or sound from Renando is copied.
 - **Behavior:** Both sounds are disabled until the visitor explicitly enables sound; audio is not preloaded. On supported browsers the OGG source is used; MP3 is supplied as a format fallback. The Spotify playlist is independent.
 
 `REVIEW.md` retains the original screenshot comparison as a historical record. Its current-status note tracks changes made after that review.

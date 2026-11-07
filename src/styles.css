@@ -89,6 +89,8 @@ img.portrait{object-fit:cover}
 .gold-button:not(:disabled):hover{background:#edd694}
 .availability{color:var(--muted);font-size:13px;padding:2px 0 10px;border-bottom:1px solid var(--line)}
 iframe{display:block;border:1px solid var(--line);width:100%;min-height:270px;border-radius:var(--radius-card)}
+/* Spotify's compact player is 152px tall; prevent a white area below it. */
+#player iframe{height:152px;min-height:0}
 .contact-note{margin-top:24px}
 .pager{display:flex;justify-content:center;align-items:center;gap:clamp(8px,3vw,18px);margin:24px 0 0;color:var(--muted);text-align:center}
 .pager button{width:46px;height:46px;border:1px solid var(--line);color:var(--gold);flex:none;border-radius:50%;display:grid;place-items:center}

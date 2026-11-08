@@ -68,8 +68,15 @@ test('decorative sweep and dots follow the selected orbit without independent mo
 test('dot and sweep paths are separate from the three main navigation rails', () => {
   const html = readFileSync(new URL('../src/index.html', import.meta.url), 'utf8');
   const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
-  const mobile = html.match(/<svg class="rails mobile-rails"[\\s\\S]*?<\\/svg>/)?.[0] ?? '';
-  const desktop = html.match(/<svg class="rails desktop-rails"[\\s\\S]*?<\\/svg>/)?.[0] ?? '';
+  const svgFor = (className) => {
+    const start = html.indexOf('<svg class="rails ' + className + '"');
+    assert.ok(start >= 0, className + ' svg must exist');
+    const end = html.indexOf('</svg>', start);
+    assert.ok(end > start, className + ' svg must be closed');
+    return html.slice(start, end);
+  };
+  const mobile = svgFor('mobile-rails');
+  const desktop = svgFor('desktop-rails');
   assert.ok(mobile.includes('M-24 24 Q195 217 414 24')); // Main rails untouched.
   assert.ok(mobile.includes('class="orbit-beads" d="M-24 39 Q195 240 414 39"'));
   assert.ok(mobile.includes('class="glint" d="M-24 48 Q195 250 414 48"'));

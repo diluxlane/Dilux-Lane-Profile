@@ -1,6 +1,6 @@
 import { destinations, profile } from './profile.js';
 import { icon } from './icons.js';
-import { offset, orbitPoint, swipeStep, wrap } from './orbit.js';
+import { offset, orbitPoint, orbitRailState, swipeStep, wrap } from './orbit.js';
 import { setupSiteSound } from './sound.js';
 import { spotifyFrameGeometry } from './spotify-layout.js';
 
@@ -83,6 +83,20 @@ function draw() {
     button.style.opacity = String(Math.min(1, (count / 2 - Math.abs(slot)) * 2.7));
     button.style.transform = `translate3d(${x}px,${y}px,0)`;
   });
+
+  // Move the gold highlight AND dotted trail along the rail as the user rotates.
+  // Unlike the previous fixed glint, nothing moves while the carousel is idle.
+  const activeRail = orbit.querySelector(desktop.matches ? '.desktop-rails' : '.mobile-rails');
+  const highlight = activeRail?.querySelector('.glint');
+  const beads = activeRail?.querySelector('.orbit-beads');
+  if (highlight && beads) {
+    const state = orbitRailState(position, count, highlight.getTotalLength(), desktop.matches ? 115 : 74);
+    if (state) {
+      highlight.style.strokeDasharray = `${state.dashLength} 10000`;
+      highlight.style.strokeDashoffset = String(state.dashOffset);
+      beads.style.strokeDashoffset = String(state.dotsOffset);
+    }
+  }
 }
 
 function settle(immediate = false) {
@@ -166,9 +180,15 @@ function wireSwipe(surface, interactiveOrbit) {
     const dy = event.clientY - drag.y;
     const vertical = interactiveOrbit && desktop.matches && Math.abs(dy) > Math.abs(dx);
     const step = event.type === 'pointerup' ? swipeStep(vertical ? dy : dx, vertical ? dx : dy) : 0;
+    // Follow the distance actually dragged: a two-slot swipe should not snap back one slot.
+    // Keep the existing one-step behavior for short swipes and non-orbit surfaces.
+    const nearest = interactiveOrbit && drag.moving && !paused && !reduced.matches
+      ? Math.round(position) : target;
     if (drag.moving) suppressClickUntil = performance.now() + 250;
     drag = null;
-    if (step) select(target + step);
+    if (event.type !== 'pointerup') settle();
+    else if (nearest !== target) select(nearest);
+    else if (step) select(target + step);
     else settle();
   }
   for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) surface.addEventListener(name, finish);

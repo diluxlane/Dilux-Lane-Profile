@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { destinations, profile } from '../src/profile.js';
-import { offset, orbitPoint, swipeStep, wrap } from '../src/orbit.js';
+import { offset, orbitPoint, orbitRailState, swipeStep, wrap } from '../src/orbit.js';
 
 test('all five destinations rotate in the requested order and wrap in both directions', () => {
   assert.deepEqual(destinations.map(({ id }) => id), ['links', 'socials', 'about', 'playlist', 'contact']);
@@ -43,4 +43,18 @@ test('published links and approved personal media match site configuration', () 
   assert.equal(profile.playlist.embedUrl, 'https://open.spotify.com/embed/playlist/3BLoPATQ9Bk8ZSblfBD8RS');
   assert.equal(profile.audioUrl, '/assets/cathedral-in-the-forest.ogg');
   assert.equal(profile.audioMp3Url, '/assets/cathedral-in-the-forest.mp3');
+});
+
+test('gold orbit highlight follows rotation instead of being fixed at the center', () => {
+  const states = [0, 1, 2, 3, 4].map(index => orbitRailState(index, 5, 500, 74));
+  assert.ok(states.every(Boolean));
+  assert.ok(states.every(s => s.dashLength === 74));
+  for (let i = 1; i < states.length; i++) {
+    assert.ok(states[i].dashOffset < states[i - 1].dashOffset);
+    assert.ok(states[i].dotsOffset < states[i - 1].dotsOffset);
+  }
+  assert.deepEqual(orbitRailState(1, 5, 500), orbitRailState(1, 5, 500));
+  assert.ok(orbitRailState(1.5, 5, 500).dashOffset < orbitRailState(1, 5, 500).dashOffset);
+  assert.equal(orbitRailState(0, 5, 0), null);
+  assert.equal(orbitRailState(Number.NaN, 5, 500), null);
 });

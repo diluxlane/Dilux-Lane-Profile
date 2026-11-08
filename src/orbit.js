@@ -23,3 +23,21 @@ export function swipeStep(dx, dy, distance = 34) {
     ? -Math.sign(dx)
     : 0;
 }
+
+/**
+ * Place the short golden accent on the same curved rail as the dotted track.
+ * Both offsets are deterministic from the currently rendered carousel position;
+ * this never starts its own animation or timer.
+ */
+export function orbitRailState(position, count, railLength, requestedDash = 72) {
+  if (!Number.isFinite(position) || !Number.isFinite(railLength) || count <= 0 || railLength <= 0) {
+    return null;
+  }
+  const dashLength = Math.min(railLength, Math.max(0, requestedDash));
+  const distance = Math.max(0, railLength - dashLength);
+  return {
+    dashLength,
+    dashOffset: -distance * (wrap(position, count) / count),
+    dotsOffset: -position * 24,
+  };
+}

@@ -39,25 +39,24 @@ body{isolation:isolate}
 .orbit:active{cursor:grabbing}
 .rails{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:visible;fill:none;stroke:var(--gold);stroke-opacity:.43;stroke-width:.65}
 .mobile-rails{transform:translateY(-33%) scaleY(1.14)}
-/* Rail accents are driven by the orbit position, not by an endless CSS timer. */
-/* The sparse dots and the short sweep follow their own lower, parallel-ish curves;
-   neither shares the geometry of the three unchanged main rails. */
-.orbit-beads{fill:none;stroke-width:1.5;stroke-opacity:.64;stroke-linecap:round;stroke-dasharray:.8 18}
-.glint{fill:none;stroke-width:3.4;stroke-opacity:.9;stroke-linecap:round;stroke-dasharray:0 10000}
+/* The source tracks are measured only on resize. Rendered dots are round
+   screen-pixel circles, and the short stroke follows its own source curve. */
+.orbit-beads,.glint-track{fill:none;stroke:none}
+.orbit-dots{fill:var(--gold);stroke:none;opacity:.64}
+.glint{fill:none;stroke-width:1.8;stroke-opacity:.9;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 .orbit-button{--size:clamp(43px,12vw,66px);position:absolute;left:0;top:0;translate:-50% -50%;width:var(--size);height:var(--size);border-radius:50%;color:var(--gold);white-space:nowrap;font-size:clamp(9px,2.55vw,14px);touch-action:pan-y pinch-zoom}
 .orbit-button[aria-selected=true]{color:var(--ivory)}
-.circle{width:100%;height:100%;display:grid;place-items:center;border:1px solid #c9b477;background:#10171f;border-radius:50%;color:var(--gold);transition:background .23s,color .23s;position:relative}
+.circle{width:100%;height:100%;display:grid;place-items:center;border:1px solid #c9b477;background:color-mix(in srgb,#10171f,#e0c680 calc(var(--selection,0)*100%));border-radius:50%;color:color-mix(in srgb,var(--gold),#171911 calc(var(--selection,0)*100%));position:relative}
 .circle svg{width:44%;height:44%}
-.orbit-button:hover .circle{background:#27303a}
-.orbit-button[aria-selected=true] .circle{background:#e0c680;color:#171911}
-.orbit-button[aria-selected=true] .circle::after{content:"";position:absolute;inset:-5px;border:1px solid #e0c680aa;border-radius:inherit}
+.orbit-button:hover .circle{background:color-mix(in srgb,#27303a,#e0c680 calc(var(--selection,0)*100%))}
+.circle::after{opacity:var(--selection,0);content:"";position:absolute;inset:-5px;border:1px solid #e0c680aa;border-radius:inherit}
 .orbit-button .label{position:absolute;top:calc(100% + 8px);left:50%;translate:-50% 0;pointer-events:none}
 .hint{text-align:center;color:var(--muted);font-size:8px;margin:4px 0 15px}
 main{width:min(100% - var(--gutter)*2,610px);margin:auto;touch-action:pan-y pinch-zoom}
 .panel-meta{display:flex;align-items:center;justify-content:space-between;color:var(--muted)}
 .panel-meta strong{color:var(--gold);font-size:13px;font-weight:550}
-#content.arriving{animation:arrive .33s ease-out both}
-@keyframes arrive{from{opacity:.18;transform:translateY(7px)}to{opacity:1;transform:none}}
+#panel{position:relative;overflow-anchor:none}
+.content-outgoing{position:absolute;pointer-events:none;user-select:none}
 h2{font-size:clamp(26px,7vw,41px);line-height:1.2;letter-spacing:.032em;margin:11px 0 10px}
 .lede{color:var(--muted);font-size:clamp(13px,3.35vw,17px)}
 .panel-body{margin-top:21px}

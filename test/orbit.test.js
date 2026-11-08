@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFileSync } from 'node:fs';
 import { destinations, profile } from '../src/profile.js';
-import { offset, orbitPoint, orbitRailState, swipeStep, wrap } from '../src/orbit.js';
+import { angleDelta, angularPosition, curveStroke, decorationProgress, offset, orbitGeometry, orbitPoint, pointerAngle, pointOnCurve, settleProgress, snapRotation, swipeStep, wrap } from '../src/orbit.js';
 
 test('all five destinations rotate in the requested order and wrap in both directions', () => {
   assert.deepEqual(destinations.map(({ id }) => id), ['links', 'socials', 'about', 'playlist', 'contact']);
@@ -46,53 +46,99 @@ test('published links and approved personal media match site configuration', () 
   assert.equal(profile.audioMp3Url, '/assets/cathedral-in-the-forest.mp3');
 });
 
-test('decorative sweep and dots follow the selected orbit without independent motion', () => {
-  const at = (position) => orbitRailState(position, 5, 500, 114);
-  const phases = [0, 1, 2, 3, 4].map(at);
-  assert.ok(phases.every(Boolean));
-  assert.ok(phases.every(state => state.dashLength === 114));
-  // About → Playlist → Contact moves the short sweep toward the left.
-  assert.ok(at(2).dashOffset < at(3).dashOffset);
-  assert.ok(at(3).dashOffset < at(4).dashOffset);
-  assert.ok(at(2.5).dashOffset > at(2).dashOffset);
-  assert.ok(at(2.5).dashOffset < at(3).dashOffset);
-  assert.ok(at(1).dotsOffset < at(0).dotsOffset);
-  assert.ok(at(2).dotsOffset < at(1).dotsOffset);
-  assert.equal(at(0).highlightOpacity, 0);
-  assert.equal(at(3).highlightOpacity, 1);
-  assert.deepEqual(at(3), at(3)); // Nothing moves while position is unchanged.
-  assert.equal(orbitRailState(0, 5, 0), null);
-  assert.equal(orbitRailState(Number.NaN, 5, 500), null);
-});
 
-test('dot and sweep paths are separate from the three main navigation rails', () => {
-  const html = readFileSync(new URL('../src/index.html', import.meta.url), 'utf8');
-  const css = readFileSync(new URL('../src/styles.css', import.meta.url), 'utf8');
-  const svgFor = (className) => {
-    const start = html.indexOf('<svg class="rails ' + className + '"');
-    assert.ok(start >= 0, className + ' svg must exist');
-    const end = html.indexOf('</svg>', start);
-    assert.ok(end > start, className + ' svg must be closed');
-    return html.slice(start, end);
-  };
-  const mobile = svgFor('mobile-rails');
-  const desktop = svgFor('desktop-rails');
-  assert.ok(mobile.includes('M-24 24 Q195 217 414 24')); // Main rails untouched.
-  assert.ok(mobile.includes('class="orbit-beads" d="M-24 39 Q195 240 414 39"'));
-  assert.ok(mobile.includes('class="glint" d="M-24 48 Q195 250 414 48"'));
-  // Vertical distances along the same quadratic parameter are always positive.
-  for (let i = 0; i <= 20; i++) {
-    const t = i / 20;
-    const y = (start, control) => start * ((1 - t) ** 2 + t ** 2) + 2 * (1 - t) * t * control;
-    const main = y(24, 217);
-    const dots = y(39, 240);
-    const sweep = y(48, 250);
-    assert.ok(dots > main + 14);
-    assert.ok(sweep > dots + 8);
+test('ellipse projection maps approved adjacent icon positions to one angular step', () => {
+  for (const width of [320,360,390,430,768,900,1024,1280,1440,1920]) {
+    const desktop = width >= 900;
+    const height = desktop ? 740 : 110;
+    const geometry = orbitGeometry(width, height, desktop);
+    const origin = pointerAngle(orbitPoint(0, width, height, desktop), geometry);
+    const neighbor = pointerAngle(orbitPoint(1, width, height, desktop), geometry);
+    const candidate = angularPosition(0, angleDelta(origin, neighbor), geometry);
+    assert.ok(Math.abs(candidate + 1) < 1e-9);
+    assert.equal(pointerAngle({ x: geometry.cx, y: geometry.cy }, geometry), null);
   }
-  assert.ok(desktop.includes('class="orbit-beads" d="M-5 54'));
-  assert.ok(desktop.includes('class="glint" d="M-8 66'));
-  assert.ok(css.includes('stroke-dasharray:.8 18'));
-  assert.ok(!css.includes('animation:glimmer'));
 });
 
+test('angle unwrapping follows the short continuous turn across both pi seams', () => {
+  assert.ok(Math.abs(angleDelta(Math.PI - .02, -Math.PI + .03) - .05) < 1e-9);
+  assert.ok(Math.abs(angleDelta(-Math.PI + .02, Math.PI - .03) + .05) < 1e-9);
+  assert.equal(angleDelta(null, 1), 0);
+  assert.equal(angleDelta(1, null), 0);
+  const geometry = orbitGeometry(390, 110, false);
+  let angle = 2.9;
+  let travel = 0;
+  for (const change of [.2, .3, -.3, -.2]) {
+    const next = Math.atan2(Math.sin(angle + change), Math.cos(angle + change));
+    travel += angleDelta(angle, next);
+    angle = next;
+  }
+  assert.ok(Math.abs(angularPosition(3, travel, geometry) - 3) < 1e-9);
+});
+
+test('drag thresholds, nearest snapping, and multiple turns preserve unbounded rotation', () => {
+  assert.equal(snapRotation(1.1, 0, 12), 0);
+  assert.equal(snapRotation(.49, 0, 40), 0);
+  assert.equal(snapRotation(.51, 0, 40), 1);
+  assert.equal(snapRotation(3.6, 0, 170), 4);
+  assert.equal(snapRotation(-1.4, 0, 90), -1);
+  assert.equal(wrap(snapRotation(5.3, 4, 90), 5), 0);
+  assert.equal(wrap(snapRotation(-.8, 0, 90), 5), 4);
+});
+
+test('settling is monotone, bounded and finishes exactly without an overshoot', () => {
+  assert.equal(settleProgress(0), 0);
+  assert.equal(settleProgress(1), 1);
+  let previous = 0;
+  for (let i = 1; i <= 100; i++) {
+    const progress = settleProgress(i / 100);
+    assert.ok(progress >= previous && progress <= 1);
+    previous = progress;
+  }
+});
+
+test('gold and dot progress share rotation with no first-state disappearance or seam drift', () => {
+  for (const length of [300,511,900]) {
+    const initial = decorationProgress(0,5,length);
+    assert.equal(initial.center,length/2);
+    assert.ok(initial.spacing >= 17 && initial.spacing <= 19);
+    for (const position of [-5,-.01,0,.01,1,2,3,4,4.99,5,5.01]) {
+      const state = decorationProgress(position,5,length);
+      assert.ok(state.center >= 0 && state.center < length);
+      assert.equal(state.intervals,initial.intervals);
+      const repeated = decorationProgress(position + 5,5,length);
+      const difference = Math.abs(state.center - repeated.center);
+      assert.ok(Math.min(difference, length - difference) < 1e-8);
+    }
+    assert.equal(decorationProgress(5,5,length).center,initial.center);
+    assert.equal(decorationProgress(5,5,length).offset,-length);
+  }
+});
+
+test('screen-distance interpolation keeps dot spacing uniform and splits the stroke at offscreen endpoints', () => {
+  const points = [{x:0,y:0,distance:0},{x:25,y:0,distance:50},{x:50,y:0,distance:100}];
+  assert.deepEqual(pointOnCurve(points,30),{x:15,y:0});
+  assert.deepEqual(pointOnCurve(points,100),{x:50,y:0});
+  assert.equal((curveStroke(points,50,20).match(/M/g)||[]).length,1);
+  assert.equal((curveStroke(points,2,20).match(/M/g)||[]).length,2);
+});
+
+test('all three original rails and the two separate decorative source curves remain intact', () => {
+  const html = readFileSync(new URL('../src/index.html', import.meta.url), 'utf8');
+  assert.ok(html.includes('M-24 0 Q195 193 414 0 M-24 12 Q195 205 414 12 M-24 24 Q195 217 414 24'));
+  assert.ok(html.includes('M0 14 C360 20 540 230 540 488 C540 670 445 801 294 880 M0 25 C350 26 531 236 531 488 C531 664 440 794 285 880 M0 36 C340 33 522 242 522 488 C522 658 435 787 276 880'));
+  assert.ok(html.includes('class="orbit-beads" d="M-24 39 Q195 240 414 39"'));
+  assert.ok(html.includes('class="glint-track" d="M-24 48 Q195 250 414 48"'));
+  assert.ok(html.includes('class="orbit-beads" d="M-5 54'));
+  assert.ok(html.includes('class="glint-track" d="M-8 66'));
+});
+
+test('normalized atan2 covers all quadrants without depending on ellipse aspect ratio', () => {
+  for (const desktop of [false,true]) {
+    const g=orbitGeometry(390,740,desktop);
+    assert.equal(pointerAngle({x:g.cx+g.rx,y:g.cy},g),0);
+    assert.equal(pointerAngle({x:g.cx,y:g.cy+g.ry},g),Math.PI/2);
+    assert.equal(pointerAngle({x:g.cx-g.rx,y:g.cy},g),Math.PI);
+    assert.equal(pointerAngle({x:g.cx,y:g.cy-g.ry},g),-Math.PI/2);
+  }
+});

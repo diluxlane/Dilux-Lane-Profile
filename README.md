@@ -61,7 +61,7 @@ The Vercel URL above is the **verified production URL**. A future custom domain 
 | Area | Implementation |
 | --- | --- |
 | Frontend | Semantic HTML, CSS, and vanilla JavaScript (ES modules) |
-| Navigation and animations | Custom orbit geometry, pointer interaction, CSS animations, and `requestAnimationFrame` |
+| Navigation and animations | Angular Pointer Events, SVG curves, `requestAnimationFrame`, and the Web Animations API |
 | Audio | HTML Audio and Web Audio APIs; locally hosted OGG, MP3, and WAV assets |
 | Playlist | Spotify embedded player and direct playlist URL |
 | Typography | Locally hosted **Jost** variable font (SIL OFL 1.1) |
@@ -76,7 +76,9 @@ src/
   index.html       Website markup and page metadata
   styles.css       Global styling, colors, responsive layout, and rounded UI
   app.js           Navigation, destination rendering, sharing, Spotify embed
-  orbit.js         Orbit positioning, index wrapping, and swipe behavior
+  orbit.js         Orbit geometry, angular input, snapping, and curve math
+  orbit-decoration.js  Screen-distance SVG decoration measurement/rendering
+  content-transition.js  Interruptible accessible content crossfades
   sound.js         Opt-in ambient playback and navigation sound effect
   profile.js       Approved public links, portrait, playlist, and audio URLs
   icons.js         Project-specific interface icons
@@ -90,7 +92,8 @@ public/assets/
   cathedral-in-the-forest.mp3  MP3 compatibility version
   orbit-kick.wav               Original short navigation sound
 test/
-  orbit.test.js     Navigation and approved-profile configuration checks
+  orbit.test.js     Angular geometry, wrapping, snapping and curve checks
+  content-transition.test.js  Crossfade interruption and accessible lifecycle checks
   sound.test.js     Navigation WAV format, duration, and level checks
 .github/workflows/
   ci.yml            Automated syntax checks, tests, and static build
@@ -184,6 +187,51 @@ The additional image payload is approximately 17.2 KiB on portrait mobile and 36
 - The source hero hash and non-background source files were checked against the starting commit. No application JavaScript, HTML structure, portrait, music, navigation audio, fonts, personal data, links, or controls were edited.
 - The fixed artwork has no motion or document-height dependency. Physical Android scroll performance, native browser chrome resizing, audio playback, Spotify playback, and a formal screen-reader/Lighthouse audit were not measured during this background-only update.
 - The supporting artwork and flying figure differ from Renando's scene. The transition is a layered blend, not a pixel-exact outpainting or verified recreation of the reference's background system.
+
+## Angular orbit interaction and content transitions
+
+The navigation uses one continuous, unbounded rendered destination position. Pointer input, settling, icon transforms, proximity-based gold fill, the highlighted stroke and the dot pattern all derive from that position. The integer target records the committed destination; content, the selected tab's ARIA state, numbering and URL change together only when a gesture snaps or another navigation action commits. Partial dragging previews the orbit without rebuilding the destination.
+
+### Pointer geometry
+
+The original `orbitPoint()` polynomial remains the icon-layout function. Input uses an effective ellipse matching its central tangent, rather than replacing the layout with a circular wheel.
+
+| Layout | Effective center | Ellipse radii | Forward input |
+| --- | --- | --- | --- |
+| Mobile horizontal arc | 0.5 × width, −0.8 × height | 0.65 × width, 1.35 × height | Increasing normalized pointer angle |
+| Desktop vertical orbit | 0.05 × width, 0.652 × height | 0.572 × width, 0.4 × height | Decreasing normalized pointer angle |
+
+`Math.atan2((y − cy) / ry, (x − cx) / rx)` measures the pointer angle. `atan2(sin(delta), cos(delta))` unwraps each angular increment across ±π. The step angle is calibrated from the approved central and adjacent icon coordinates. Accumulated angle maps to fractional destination progress without a two-slot clamp. A small center dead zone avoids unstable angles close to the effective origin.
+
+Horizontal touch intent must exceed 8 pixels before pointer capture. A gesture must travel at least 24 pixels before committing a new rounded position. Vertical desktop mouse input uses the ellipse's actual angle. Dominant horizontal desktop mouse gestures and horizontal desktop touch swipes lock onto its vertical tangent, retaining horizontal drag support while leaving native vertical touch scrolling available. Cancellation returns to the committed destination. Resize or orientation changes cancel an unfinished gesture and remeasure the geometry. A compatibility click following a drag is consumed, and a fresh pointer gesture clears that suppression.
+
+Settling uses a 420 ms normalized critically damped response with no overshoot. Animation requests stop at rest. Pause and reduced-motion preferences preserve navigation while making selections immediate.
+
+### Separate, synchronized SVG decorations
+
+The three original thin rails and the two distinct decorative source curves retain their original coordinates. The source curves are sampled on resize using `getTotalLength()`, `getPointAtLength()` and their screen transform. No curve-length or layout measurements run in the pointer animation loop.
+
+Dots are separately positioned SVG circles at approximately 18 CSS-pixel intervals along their own curve. Their transforms cancel the parent's nonuniform scale, keeping the dots round at a 1.3 pixel diameter. The short highlighted stroke uses the separate gold curve, with a constant 1.8 pixel screen-space thickness and a maximum length of 82 pixels. Its sampled path stays smooth at roughly 3 pixel segments.
+
+Both decorations advance by the same normalized rotation progress on their respective curves. Endpoint wrapping uses separate SVG subpaths outside the clipped orbit instead of drawing a line across the menu. The first destination now has a visible gold stroke. There is no independent decorative timer or idle rotation.
+
+### Content lifecycle
+
+Normal selection changes crossfade an inert outgoing snapshot over 160 ms while the current incoming content fades in and slides upward by 6 pixels over 260 ms. Only the incoming `#content` remains interactive and accessible. The outgoing node loses IDs and focus targets, and embedded media is disposed immediately. A temporary minimum height keeps the footer below the outgoing panel during the fade, then clears.
+
+Rapid retargeting cancels unfinished effects and commits the latest incoming panel directly. Stale animation completions cannot remove newer content. Pause, reduced motion and resizing finish pending effects immediately. The transition code does not call scrolling APIs; the browser can naturally clamp an old scroll position when the new destination is shorter.
+
+### Verification
+
+All 18 Node tests, JavaScript syntax checks and the production build pass. Added tests cover pointer angles and quadrants, ±π unwrapping, responsive input geometry, thresholds and snapping, wrapping, monotone settling, synchronized decorative progress, source-rail preservation, screen-distance interpolation, transition interruption, inert outgoing content and immediate reduced-motion/pause replacement.
+
+Chromium verification compared all five destinations against the baseline at **320, 360, 390, 430, 768, 900, 1024, 1280, 1440 and 1920 px**. All 50 checks preserved the settled icon coordinates, content bounds and document height, with no horizontal overflow. The rendered dots measured 1.3 × 1.3 pixels throughout. A further 35 checks covered portrait and landscape viewports at 320 × 568, 430 × 932, 768 × 1024, 844 × 390, 900 × 600, 1024 × 768 and 1920 × 1080.
+
+A 34-check mobile suite and 36-check desktop suite exercised slow/fast and multi-destination drags, both directions, reversal before release, snap midpoints, cancellation, both wrap seams, compatibility-click suppression, partial-drag content stability, rapid selection cleanup, pause, idle-frame detection, audio gating and Spotify mount/disposal. The desktop suite also checked horizontal touch projection and vertical scroll intent. A 33-check suite used a simulated reduced-motion media query. Audio APIs were instrumented to count permitted playback events without playing the soundtrack. Synthetic-pointer checks used a local harness; trusted browser mouse drags on both layouts, clicks on all five icons, Home/End and all arrow keys were separately verified. A held drag was cancelled by resizing across the mobile/desktop breakpoint, and ordinary mobile-width scrolling left the selected destination unchanged. Final rapid-keyboard switching left one current panel, unique IDs, no outgoing snapshot and no residual height lock.
+
+All five selected positions were captured at 390 px mobile and 1280 px desktop, along with intermediate fractional positions. These are real Chromium iframe viewports, not physical phone tests. Actual touch hardware, native OS motion settings, audio quality, Spotify playback and a formal screen-reader/performance audit remain device-level checks. The decorative stroke can briefly pass beyond the cropped endpoints during a wrap. Its geometry and timing are an original interpretation of the supplied guidance.
+
+Browser records and comparison captures accompany this update's validation report. The implementation is original code informed by the creator's supplied technical guidance about angular radial input, SVG arcs, orbital motion and crossfade/slide transitions. The background artwork, portrait, fonts, palette, sound assets, playlist configuration, destination content and public links retain their existing sources and rights.
 
 ## Verification and known limits
 

@@ -1,6 +1,11 @@
 import { destinations, profile } from './profile.js';
 import { icon } from './icons.js';
-import { offset, orbitPoint, orbitRailState, swipeStep, wrap } from './orbit.js';
+import {
+  angleDelta, angularPosition, offset, orbitGeometry, orbitPoint, pointerAngle,
+  settleProgress, snapRotation, swipeStep, wrap,
+} from './orbit.js';
+import { createOrbitDecoration } from './orbit-decoration.js';
+import { createContentTransition } from './content-transition.js';
 import { setupSiteSound } from './sound.js';
 import { spotifyFrameGeometry } from './spotify-layout.js';
 
@@ -13,14 +18,20 @@ const count = destinations.length;
 let content = $('#content');
 let target = 0;
 let position = 0;
-let startPosition = 0;
 let frame = 0;
 let drag = null;
 let paused = false;
 let toastTimer;
-let suppressClickUntil = 0;
+let suppressClick = false;
 let playNavigationSound = () => {};
 let spotifyResizeObserver = null;
+const contentTransition = createContentTransition(panel);
+let dimensions;
+let geometry;
+const decorations = new Map([...orbit.querySelectorAll('.rails')].map(svg => [
+  svg, createOrbitDecoration(svg, count),
+]));
+let decoration;
 
 function row(entry) {
   return `<a class="row" href="${entry.url}">${icon(entry.icon)}
@@ -66,7 +77,10 @@ const buttons = destinations.map((destination, index) => {
   button.setAttribute('aria-controls', 'panel');
   button.innerHTML = `<span class="circle">${icon(destination.icon)}</span><span class="label">${destination.label}</span>`;
   button.addEventListener('click', (event) => {
-    if (event.detail && performance.now() < suppressClickUntil) return;
+    if (event.detail && suppressClick) {
+      suppressClick = false;
+      return;
+    }
     select(target + offset(index, target, count));
   });
   orbit.append(button);
@@ -74,49 +88,70 @@ const buttons = destinations.map((destination, index) => {
 });
 
 function draw() {
-  const width = orbit.clientWidth;
-  const height = orbit.clientHeight;
+  if (!dimensions) return;
   buttons.forEach((button, index) => {
     const slot = offset(index, position, count);
-    const { x, y } = orbitPoint(slot, width, height, desktop.matches);
-    // Fade the element as it crosses the wrap seam on the far side of the orbit.
+    const { x, y } = orbitPoint(slot, dimensions.width, dimensions.height, desktop.matches);
     button.style.opacity = String(Math.min(1, (count / 2 - Math.abs(slot)) * 2.7));
     button.style.transform = `translate3d(${x}px,${y}px,0)`;
+    button.style.setProperty('--selection', String(Math.max(0, 1 - Math.abs(slot))));
   });
+  decoration?.draw(position);
+}
 
-  // Move the gold highlight AND dotted trail along the rail as the user rotates.
-  // Unlike the previous fixed glint, nothing moves while the carousel is idle.
-  const activeRail = orbit.querySelector(desktop.matches ? '.desktop-rails' : '.mobile-rails');
-  const highlight = activeRail?.querySelector('.glint');
-  const beads = activeRail?.querySelector('.orbit-beads');
-  if (highlight && beads) {
-    const state = orbitRailState(position, count, highlight.getTotalLength(), desktop.matches ? 130 : 114);
-    if (state) {
-      highlight.style.strokeDasharray = `${state.dashLength} 10000`;
-      highlight.style.strokeDashoffset = String(state.dashOffset);
-      highlight.style.opacity = String(state.highlightOpacity);
-      beads.style.strokeDashoffset = String(state.dotsOffset);
-    }
-  }
+function cancelFrame() {
+  cancelAnimationFrame(frame);
+  frame = 0;
+}
+
+function queueDraw() {
+  if (!frame) frame = requestAnimationFrame(() => {
+    frame = 0;
+    draw();
+  });
 }
 
 function settle(immediate = false) {
-  cancelAnimationFrame(frame);
+  cancelFrame();
   if (immediate || paused || reduced.matches) {
     position = target;
     draw();
     return;
   }
   const from = position;
+  const goal = target;
+  if (Math.abs(goal - from) < .00001) {
+    position = goal;
+    draw();
+    return;
+  }
   const start = performance.now();
   function tick(now) {
-    const progress = Math.min((now - start) / 460, 1);
-    const spring = 1 - Math.exp(-6 * progress) * Math.cos(8 * progress);
-    position = progress === 1 ? target : from + (target - from) * spring;
+    const progress = Math.min((now - start) / 420, 1);
+    position = from + (goal - from) * settleProgress(progress);
     draw();
-    if (progress < 1) frame = requestAnimationFrame(tick);
+    frame = progress < 1 ? requestAnimationFrame(tick) : 0;
   }
   frame = requestAnimationFrame(tick);
+}
+
+function cancelDrag() {
+  if (!drag) return;
+  const current = drag;
+  drag = null;
+  if (current.moving) suppressClick = true;
+  if (current.surface.hasPointerCapture(current.id)) current.surface.releasePointerCapture(current.id);
+}
+
+function measureOrbit() {
+  cancelDrag();
+  contentTransition.finish();
+  dimensions = { width: orbit.clientWidth, height: orbit.clientHeight };
+  geometry = orbitGeometry(dimensions.width, dimensions.height, desktop.matches);
+  const svg = orbit.querySelector(desktop.matches ? '.desktop-rails' : '.mobile-rails');
+  decoration = decorations.get(svg);
+  decoration.measure();
+  settle(true);
 }
 
 function select(next, { focus = false, updateHash = true, immediate = false } = {}) {
@@ -133,12 +168,11 @@ function select(next, { focus = false, updateHash = true, immediate = false } = 
     $('#number').textContent = String(active + 1).padStart(2, '0');
     const replacement = document.createElement('div');
     replacement.id = 'content';
-    if (!immediate) replacement.className = 'arriving';
     replacement.innerHTML = `<h2>${current.title}<span>.</span></h2><p class="lede">${current.description}</p><div class="panel-body">${renderBody[current.id]()}</div>`;
     if (content.contains(document.activeElement)) panel.focus({ preventScroll: true });
     spotifyResizeObserver?.disconnect();
     spotifyResizeObserver = null;
-    content.replaceWith(replacement);
+    contentTransition.replace(content, replacement, !immediate && !paused && !reduced.matches);
     content = replacement;
     if (updateHash) history.replaceState(null, '', `#${current.id}`);
   }
@@ -156,53 +190,82 @@ function wireSwipe(surface, interactiveOrbit) {
   surface.addEventListener('pointerdown', (event) => {
     if (!event.isPrimary || event.button !== 0 || drag) return;
     if (!interactiveOrbit && (event.pointerType === 'mouse' || event.target.closest('button,a,input,iframe'))) return;
-    drag = { surface, id: event.pointerId, x: event.clientX, y: event.clientY, moving: false };
-    startPosition = position;
+    suppressClick = false;
+    if (interactiveOrbit) cancelFrame();
+    const rect = interactiveOrbit ? orbit.getBoundingClientRect() : null;
+    const point = rect ? { x: event.clientX - rect.left, y: event.clientY - rect.top } : null;
+    drag = {
+      surface, id: event.pointerId, x: event.clientX, y: event.clientY,
+      rect, point, geometry, origin: position, candidate: position,
+      angle: point ? pointerAngle(point, geometry) : null, travel: 0, distance: 0, moving: false,
+    };
   });
-  surface.addEventListener('pointermove', (event) => {
+
+  function move(event) {
     if (drag?.id !== event.pointerId || drag.surface !== surface) return;
     const dx = event.clientX - drag.x;
     const dy = event.clientY - drag.y;
-    const distance = interactiveOrbit && desktop.matches ? (Math.abs(dy) > Math.abs(dx) ? dy : dx) : dx;
-    const cross = distance === dy && interactiveOrbit && desktop.matches ? dx : dy;
-    if (!drag.moving && swipeStep(distance, cross, 9)) {
+    drag.distance = Math.max(drag.distance, Math.hypot(dx, dy));
+    const horizontal = !interactiveOrbit || !desktop.matches || event.pointerType !== 'mouse';
+    if (!drag.moving) {
+      const intent = horizontal ? swipeStep(dx, dy, 8) !== 0 : Math.hypot(dx, dy) >= 8;
+      if (!intent) return;
       drag.moving = true;
+      drag.projectHorizontal = interactiveOrbit && desktop.matches
+        && (event.pointerType !== 'mouse' || Math.abs(dx) > Math.abs(dy) * 1.25);
       surface.setPointerCapture(event.pointerId);
-      cancelAnimationFrame(frame);
     }
-    if (drag.moving && interactiveOrbit && !paused && !reduced.matches) {
-      position = startPosition - Math.max(-2, Math.min(2, distance / Math.max(48, orbit.clientWidth / 5)));
-      draw();
+    if (!interactiveOrbit) return;
+    let point = { x: event.clientX - drag.rect.left, y: event.clientY - drag.rect.top };
+    // Lock dominant horizontal desktop input onto the vertical tangent.
+    // Vertical mouse drags keep the actual ellipse angle; touch scrolling stays native.
+    if (drag.projectHorizontal) {
+      point = { x: drag.point.x, y: drag.point.y + dx * drag.geometry.ry / drag.geometry.rx };
     }
-  });
+    const angle = pointerAngle(point, drag.geometry);
+    drag.travel += angleDelta(drag.angle, angle);
+    drag.angle = angle;
+    drag.candidate = angularPosition(drag.origin, drag.travel, drag.geometry);
+    if (!paused && !reduced.matches) {
+      position = drag.candidate;
+      queueDraw();
+    }
+  }
+
+  surface.addEventListener('pointermove', move);
   function finish(event) {
     if (drag?.id !== event.pointerId || drag.surface !== surface) return;
-    const dx = event.clientX - drag.x;
-    const dy = event.clientY - drag.y;
-    const vertical = interactiveOrbit && desktop.matches && Math.abs(dy) > Math.abs(dx);
-    const step = event.type === 'pointerup' ? swipeStep(vertical ? dy : dx, vertical ? dx : dy) : 0;
-    // Follow the distance actually dragged: a two-slot swipe should not snap back one slot.
-    // Keep the existing one-step behavior for short swipes and non-orbit surfaces.
-    const nearest = interactiveOrbit && drag.moving && !paused && !reduced.matches
-      ? Math.round(position) : target;
-    if (drag.moving) suppressClickUntil = performance.now() + 250;
+    if (event.type === 'pointerup') move(event);
+    const current = drag;
     drag = null;
-    if (event.type !== 'pointerup') settle();
-    else if (nearest !== target) select(nearest);
-    else if (step) select(target + step);
-    else settle();
+    if (current.moving) suppressClick = true;
+    if (surface.hasPointerCapture(event.pointerId)) surface.releasePointerCapture(event.pointerId);
+    if (event.type !== 'pointerup' || !current.moving) {
+      settle();
+      return;
+    }
+    if (interactiveOrbit) {
+      select(snapRotation(current.candidate, target, current.distance));
+    } else {
+      select(target + swipeStep(event.clientX - current.x, event.clientY - current.y));
+    }
   }
   for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) surface.addEventListener(name, finish);
-  surface.addEventListener('pointerleave', (event) => {
+  surface.addEventListener('pointerleave', event => {
     if (drag?.id === event.pointerId && drag.surface === surface && !drag.moving) finish(event);
   });
 }
 
 wireSwipe(orbit, true);
 wireSwipe($('main'), false);
-new ResizeObserver(draw).observe(orbit);
-desktop.addEventListener('change', draw);
-reduced.addEventListener('change', () => settle(true));
+new ResizeObserver(measureOrbit).observe(orbit);
+desktop.addEventListener('change', measureOrbit);
+reduced.addEventListener('change', () => {
+  cancelDrag();
+  contentTransition.finish();
+  settle(true);
+});
+measureOrbit();
 window.addEventListener('hashchange', selectFromHash);
 selectFromHash();
 if (!panel.hasAttribute('aria-labelledby')) select(0, { updateHash: false, immediate: true });
@@ -235,6 +298,8 @@ motion.addEventListener('click', () => {
   motion.setAttribute('aria-pressed', String(paused));
   motion.setAttribute('aria-label', paused ? 'Resume motion' : 'Pause motion');
   motion.innerHTML = icon(paused ? 'play' : 'pause');
+  cancelDrag();
+  contentTransition.finish();
   settle(true);
 });
 

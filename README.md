@@ -134,7 +134,7 @@ Changes pushed to the configured production branch trigger the existing Git-base
 Public URLs and approved personal media are managed in [`src/profile.js`](src/profile.js):
 
 - `portfolios`, `elsewhere`, `socials`, and `contact` hold public links.
-- `portrait` references the user-supplied photograph in `public/assets/portrait.webp`. The About Me image is a centered head-and-shoulders crop of the original portrait, preserving the photo and existing circular gold frame without zooming into the face.
+- `portrait` references `public/assets/portrait.webp`, a locally hosted 512 × 512 WebP rendition of the full-square avatar from the public [Dilux Lane GitHub profile](https://github.com/diluxlane). It preserves the avatar's wider head-and-upper-body composition instead of zooming in; the original gold circular border and layout are unchanged.
 - `playlist.url` and `playlist.embedUrl` hold the personal Spotify playlist links.
 - `audioUrl` and `audioMp3Url` reference locally hosted background music.
 - The navigation sound is the original `public/assets/orbit-kick.wav`, loaded through `src/sound.js` after sound is enabled.

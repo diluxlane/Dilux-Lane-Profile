@@ -14,7 +14,10 @@ h1 span,h2 span,b,.mark span{color:var(--gold)}
 .eyebrow{text-transform:uppercase;letter-spacing:.17em;font-size:10px}
 .skip{position:fixed;top:6px;left:6px;z-index:10;padding:8px;background:var(--navy);border-radius:var(--radius-control);transform:translateY(-160%)}
 .skip:focus{transform:none}
-.world{position:absolute;z-index:-1;inset:0 0 auto;height:880px;background:#101b28 url('./assets/world.webp') 18% 0/auto 620px no-repeat}
+/* A fixed depth plate stays behind every document height; only the original
+   hero plate scrolls. Both layers are decorative and ignore pointer events. */
+body::before{content:"";position:fixed;inset:0;min-height:100lvh;z-index:-2;pointer-events:none;background:linear-gradient(180deg,#0b142052,#0b142059 52%,#0b1420b8),url('./assets/world-depth-mobile.webp') center/cover no-repeat}
+.world{pointer-events:none;mask-image:linear-gradient(#000 360px,transparent 800px);position:absolute;z-index:-1;inset:0 0 auto;height:880px;background:#101b28 url('./assets/world.webp') 18% 0/auto 620px no-repeat}
 .world::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#09121c4d 0%,#09121c65 25%,#0b1420dc 57%,var(--navy) 94%)}
 body{isolation:isolate}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:17px var(--gutter);min-height:77px}
@@ -112,12 +115,13 @@ dialog input{display:block;width:100%;padding:8px;background:#131f2c;color:var(-
 @media(prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
 @media(min-width:620px) and (max-width:899px){
   .orbit{max-width:600px;margin:auto}
-  .world{background-size:cover;height:850px}
+  .world{background-size:cover;height:850px;mask-image:linear-gradient(#000 430px,transparent 840px)}
   .identity{padding-top:26px}
 }
 @media(min-width:900px){
   :root{--gutter:clamp(34px,3.4vw,62px)}
-  .world{position:fixed;height:100%;background-position:left center;background-size:cover}
+  body::before{background-image:linear-gradient(90deg,#0b14204d 52%,#0b14204d),url('./assets/world-depth-wide.webp')}
+  .world{position:fixed;height:100%;background-position:left center;background-size:cover;mask-image:linear-gradient(90deg,#000 52%,transparent 96%)}
   .world::after{background:linear-gradient(90deg,#09121c12 0%,#09121c1a 26%,#0a1320ba 53%,#091321fa 76%,#091321 100%)}
   .frame{display:block;position:fixed;pointer-events:none;z-index:5;inset:17px;background:linear-gradient(var(--line),var(--line)) top left/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) top left/1px 14px no-repeat,linear-gradient(var(--line),var(--line)) top right/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) top right/1px 14px no-repeat,linear-gradient(var(--line),var(--line)) bottom left/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) bottom left/1px 14px no-repeat,linear-gradient(var(--line),var(--line)) bottom right/14px 1px no-repeat,linear-gradient(var(--line),var(--line)) bottom right/1px 14px no-repeat}
   .topbar{padding:24px var(--gutter);position:relative;z-index:3}
@@ -147,4 +151,9 @@ dialog input{display:block;width:100%;padding:8px;background:#131f2c;color:var(-
   .row-list{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
   .pager{margin-top:30px}
   footer{width:48%;margin-left:52%;padding-left:1%;padding-right:8%}
+}
+
+/* Wide mobile landscapes use a landscape depth plate, never a stretched portrait. */
+@media(max-width:899px) and (min-aspect-ratio:4/3){
+  body::before{background-image:linear-gradient(180deg,#0b142059,#0b1420b8),url('./assets/world-depth-wide.webp')}
 }

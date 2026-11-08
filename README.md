@@ -154,6 +154,37 @@ Public URLs and approved personal media are managed in [`src/profile.js`](src/pr
 - **Navigation sound:** Original, programmatically created **180 ms** mono PCM WAV electronic-kick sample. It is not an extracted or recreated audio recording of the reference site.
 - **Spotify, GitHub, Instagram, Vercel, and linked portfolio content:** Their respective names, services, embedded materials, and trademarks remain subject to their owners' terms and rights.
 
+## Continuous cinematic background
+
+The background has two independent decorative planes. The existing `public/assets/world.webp` and the original `.world` sizing, positioning, and color overlay remain the hero plate. A mask keeps the mobile hero opaque through 360 CSS pixels, the tablet hero through 430 pixels, and the desktop hero opaque across the left 52% of the viewport. Below or beside those protected regions, it blends into a fixed `body::before` atmospheric plate.
+
+This addresses the previous mobile cutoff. The original world layer was only 880 pixels high, with the image rendered at 620 pixels and a gradient reaching solid navy by 94% of the layer. Longer destinations therefore scrolled beyond the artwork. The new fixed plate continues behind the document and footer regardless of content height. Loading the existing Spotify player changes the document height without resizing or relocating the environment. There is no fixed content height, tiled art, stretched hero, background JavaScript, added animation, or input interception. The pseudo-element has empty decorative content and `pointer-events: none`.
+
+### Artwork and responsive composition
+
+| Asset | Dimensions | Encoded bytes | Use |
+| --- | --- | --- | --- |
+| `world.webp` | 1440 × 960 | 71,476 | Existing approved hero and card artwork, byte-for-byte preserved |
+| `world-depth-mobile.webp` | 640 × 960 | 17,614 | Supporting portrait scene for phones and portrait tablets |
+| `world-depth-wide.webp` | 1600 × 1067 | 36,954 | Supporting landscape scene at 900 pixels and above, plus mobile landscapes with aspect ratio at least 4:3 |
+
+The two depth plates were independently AI-generated for this update using the site's own original world image as a visual guide. They supplement the existing artwork with distant floating ruins, clouds, small rock fragments, and a distant flying human figure. No Renando artwork or screenshot pixels are embedded. These new files are covered by the site's existing artwork and copyright terms; no separate third-party asset license is introduced.
+
+CSS selects one depth image for the current composition, with uniform scaling and cropping confined to that supporting plate. The original hero does not acquire a new `cover` rule or new scale. A navy gradient keeps the detail subdued behind the content and softer near the lower edge. The layer remains fixed while content scrolls, so this is a persistent environment rather than an arbitrarily tall image scaled to the changing page height.
+
+The additional image payload is approximately 17.2 KiB on portrait mobile and 36.1 KiB on desktop or mobile landscape. Only the selected CSS background is needed for a given composition. The original hero preload, font files, and build process are retained. If supporting artwork cannot load, the navy gradient remains a readable fallback.
+
+### Background validation on November 8, 2026
+
+- All eight existing Node tests, JavaScript syntax checks, and the production build passed locally.
+- Chromium compared all five destinations before and after at widths 320, 360, 390, 430, 768, 1024, 1280, 1440, and 1920 pixels. All 45 combinations retained the original main-content bounds, document height, hero background size/position and overlay, with no horizontal overflow.
+- Fifty further checks covered all destinations at 320 × 568, 320 × 900, 390 × 568, 430 × 932, 768 × 1024, 768 × 500, 844 × 390, 1024 × 600, 1440 × 640, and 1920 × 1080.
+- The existing Spotify load button was exercised before and after at all nine widths. Its URL, wrapper geometry, and expanded document height matched the baseline. The actual Spotify playlist and track list rendered in the browser at 390 pixels.
+- Before-and-after browser captures checked top, middle, and bottom scenery on phone, tablet, and desktop views. Additional phone captures checked the other destinations and the expanded player. Scenery continued behind the footer without a rectangular asset edge.
+- The source hero hash and non-background source files were checked against the starting commit. No application JavaScript, HTML structure, portrait, music, navigation audio, fonts, personal data, links, or controls were edited.
+- The fixed artwork has no motion or document-height dependency. Physical Android scroll performance, native browser chrome resizing, audio playback, Spotify playback, and a formal screen-reader/Lighthouse audit were not measured during this background-only update.
+- The supporting artwork and flying figure differ from Renando's scene. The transition is a layered blend, not a pixel-exact outpainting or verified recreation of the reference's background system.
+
 ## Verification and known limits
 
 - GitHub Actions validates JavaScript syntax, Node tests (including the navigation sample), and the static production build.

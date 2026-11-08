@@ -90,10 +90,11 @@ function draw() {
   const highlight = activeRail?.querySelector('.glint');
   const beads = activeRail?.querySelector('.orbit-beads');
   if (highlight && beads) {
-    const state = orbitRailState(position, count, highlight.getTotalLength(), desktop.matches ? 115 : 74);
+    const state = orbitRailState(position, count, highlight.getTotalLength(), desktop.matches ? 130 : 114);
     if (state) {
       highlight.style.strokeDasharray = `${state.dashLength} 10000`;
       highlight.style.strokeDashoffset = String(state.dashOffset);
+      highlight.style.opacity = String(state.highlightOpacity);
       beads.style.strokeDashoffset = String(state.dotsOffset);
     }
   }

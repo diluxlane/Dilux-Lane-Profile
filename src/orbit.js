@@ -25,19 +25,25 @@ export function swipeStep(dx, dy, distance = 34) {
 }
 
 /**
- * Place the short golden accent on the same curved rail as the dotted track.
- * Both offsets are deterministic from the currently rendered carousel position;
- * this never starts its own animation or timer.
+ * Move the two independent accent curves with the user-driven orbit position.
+ * The sweep moves right-to-left as the selected destination advances; it fades
+ * at the cropped wrap seam rather than jumping visibly across the navigation.
+ * There is no separate clock, CSS animation, or automatic rotation.
  */
-export function orbitRailState(position, count, railLength, requestedDash = 72) {
-  if (!Number.isFinite(position) || !Number.isFinite(railLength) || count <= 0 || railLength <= 0) {
+export function orbitRailState(position, count, railLength, requestedDash = 110) {
+  if (!Number.isFinite(position) || !Number.isFinite(railLength)
+      || !Number.isFinite(requestedDash) || count <= 0 || railLength <= 0) {
     return null;
   }
   const dashLength = Math.min(railLength, Math.max(0, requestedDash));
   const distance = Math.max(0, railLength - dashLength);
+  const phase = wrap(count - position, count) / count;
+  // Both ends lie outside the clipped rail, where a wrapped sweep can vanish.
+  const seamDistance = Math.min(phase, 1 - phase);
   return {
     dashLength,
-    dashOffset: -distance * (wrap(position, count) / count),
-    dotsOffset: -position * 24,
+    dashOffset: -distance * phase,
+    dotsOffset: -position * 6,
+    highlightOpacity: Math.min(1, seamDistance * 9),
   };
 }

@@ -40,8 +40,10 @@ body{isolation:isolate}
 .rails{position:absolute;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;overflow:visible;fill:none;stroke:var(--gold);stroke-opacity:.43;stroke-width:.65}
 .mobile-rails{transform:translateY(-33%) scaleY(1.14)}
 /* Rail accents are driven by the orbit position, not by an endless CSS timer. */
-.orbit-beads{fill:none;stroke-width:1.7;stroke-opacity:.45;stroke-linecap:round;stroke-dasharray:1 20}
-.glint{fill:none;stroke-width:3;stroke-opacity:.9;stroke-linecap:round;stroke-dasharray:0 10000}
+/* The sparse dots and the short sweep follow their own lower, parallel-ish curves;
+   neither shares the geometry of the three unchanged main rails. */
+.orbit-beads{fill:none;stroke-width:1.5;stroke-opacity:.64;stroke-linecap:round;stroke-dasharray:.8 18}
+.glint{fill:none;stroke-width:3.4;stroke-opacity:.9;stroke-linecap:round;stroke-dasharray:0 10000}
 .orbit-button{--size:clamp(43px,12vw,66px);position:absolute;left:0;top:0;translate:-50% -50%;width:var(--size);height:var(--size);border-radius:50%;color:var(--gold);white-space:nowrap;font-size:clamp(9px,2.55vw,14px);touch-action:pan-y pinch-zoom}
 .orbit-button[aria-selected=true]{color:var(--ivory)}
 .circle{width:100%;height:100%;display:grid;place-items:center;border:1px solid #c9b477;background:#10171f;border-radius:50%;color:var(--gold);transition:background .23s,color .23s;position:relative}

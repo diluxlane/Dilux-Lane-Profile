@@ -33,7 +33,7 @@ Additional social accounts and contact methods are intentionally not listed unti
 ## Highlights
 
 - Responsive floating-island experience with navy, gold, and ivory styling, locally hosted Jost typography, and rounded cards.
-- Five synchronized navigation destinations with drag/swipe interaction, keyboard support, arrow controls, and wraparound selection. The thin orbit rails, gold sweep and dotted trail move with user-driven rotation and remain still when idle.
+- Five synchronized navigation destinations with drag/swipe interaction, keyboard support, arrow controls, and wraparound selection. The three main orbit rails remain fixed; the sparse gold dots and short sweep sit on two distinct curved tracks below/beside them and follow user-driven rotation, stopping when the orbit settles.
 - A motion pause/resume control and support for the operating system's reduced-motion preference.
 - Responsive portrait and portfolio links, with no fabricated social or contact information.
 - Spotify playlist integration that loads on demand. On narrow screens, the complete full-player interface is proportionally fitted inside a rounded card instead of cropping the controls; a direct Spotify link remains available.
